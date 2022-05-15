@@ -1,17 +1,15 @@
 <script>
-    import Scheme from "../lib/Scheme.svelte";
+	import DumbScheme from '$lib/DumbScheme.svelte';
 </script>
 
-
-<svg id="scheme">
-    <Scheme/>
-</svg>
-
+<div class="container">
+	<DumbScheme />
+</div>
 
 <style>
-   #scheme {
-       width: calc(100vw - 200px);
-       min-height: 100vh;
-       margin: 100px;
-   }
+	.container {
+		padding: 25px;
+		width: 60vw;
+		margin: 0 auto;
+	}
 </style>
