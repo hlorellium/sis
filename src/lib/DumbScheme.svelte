@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	import type { PumpStates } from './models/PumpStates';
 
 	// State of each pump
@@ -42,15 +44,39 @@
 	// Is filter working
 	$: filter = v5 && v6;
 
-	const signColor = (isWorking: boolean) => {
-		return isWorking ? '#4AFF7D' : 'white';
+	const signColor = (isWorking: boolean) => (isWorking ? '#4AFF7D' : 'white');
+
+	const pipeColor = (hasWater: boolean) => (hasWater ? '#00A3FF' : '#7BD0FF');
+
+	const activeDirectionColor = (isActive: boolean) => (isActive ? '#F2990C' : '#FBFF20');
+
+	let rbLevel = 50;
+
+	const rbChangeSpeed = 1;
+
+	const rbMaxLevel = 100;
+	const rbMinLevel = 0;
+
+	$: rbLevelDecresing = nourishing && rbLevel > rbMinLevel;
+	$: rbLevelIncreasing = !nourishing && rbLevel < rbMaxLevel;
+
+	const updateRbLevel = () => {
+		if (rbLevelDecresing) {
+			rbLevel = rbLevel - rbChangeSpeed;
+		} else if (rbLevelIncreasing) {
+			rbLevel = rbLevel + rbChangeSpeed;
+		}
 	};
 
-	const pipeColor = (hasWater: boolean) => {
-		return hasWater ? '#00A3FF' : '#7BD0FF';
-	};
+	function update() {
+		updateRbLevel();
+	}
 
-	function update() {}
+	onMount(() => {
+		setInterval(update, 100);
+	});
+
+	const heightOffset = (percentage: number, height: number) => height * (percentage / 100);
 </script>
 
 <svg width="683" height="577" viewBox="0 0 683 577" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -76,7 +102,14 @@
 				stroke="black"
 			/>
 			<g id="Group 1">
-				<rect id="Rectangle 7" x="339" y="160.684" width="8" height="34.5167" fill="#7BFD80" />
+				<rect
+					id="Rectangle 7"
+					x="339"
+					y={194.7 - heightOffset(rbLevel, 86.2)}
+					width="8"
+					height={heightOffset(rbLevel, 86.2)}
+					fill="#7BFD80"
+				/>
 				<rect id="Rectangle 6" x="339.5" y="108.5" width="7" height="86.2" stroke="black" />
 			</g>
 			<text
@@ -91,13 +124,13 @@
 			<path
 				id="up"
 				d="M311.139 121.75L318.5 109L325.861 121.75H311.139Z"
-				fill="#FBFF40"
+				fill={activeDirectionColor(rbLevelIncreasing)}
 				stroke="black"
 			/>
 			<path
 				id="down"
 				d="M311.139 181.25L318.5 194L325.861 181.25H311.139Z"
-				fill="#FBFF40"
+				fill={activeDirectionColor(rbLevelDecresing)}
 				stroke="black"
 			/>
 			<g id="Group 2">
@@ -108,7 +141,7 @@
 					style="white-space: pre"
 					font-family="Inter"
 					font-size="10"
-					letter-spacing="0em"><tspan x="297.538" y="155.137">35.82</tspan></text
+					letter-spacing="0em"><tspan x="297.538" y="155.137">{rbLevel}</tspan></text
 				>
 				<rect id="Rectangle 10" x="294.5" y="144.5" width="33" height="14" stroke="black" />
 				<text
