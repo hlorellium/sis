@@ -264,31 +264,31 @@
 				</div>
 				<div>
 					<FormField>
-						<Switch bind:checked={CN1E} />
+						<Switch bind:checked={CN1E} touch />
 						<span slot="label">Авария ЦН III-1</span>
 					</FormField>
 				</div>
 				<div>
 					<FormField>
-						<Switch bind:checked={CN2E} />
+						<Switch bind:checked={CN2E} touch />
 						<span slot="label">Авария ЦН III-2</span>
 					</FormField>
 				</div>
 				<div>
 					<FormField>
-						<Switch bind:checked={CN3E} />
+						<Switch bind:checked={CN3E} touch />
 						<span slot="label">Авария ЦН III-Р</span>
 					</FormField>
 				</div>
 				<div>
 					<FormField>
-						<Switch bind:checked={TO1E} />
+						<Switch bind:checked={TO1E} touch />
 						<span slot="label">Авария TО III-IVк №1</span>
 					</FormField>
 				</div>
 				<div>
 					<FormField>
-						<Switch bind:checked={TO2E} />
+						<Switch bind:checked={TO2E} touch />
 						<span slot="label">Авария TО III-IVк №1</span>
 					</FormField>
 				</div>
