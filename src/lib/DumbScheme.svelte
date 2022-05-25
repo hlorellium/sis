@@ -4,6 +4,8 @@
 	import Textfield from '@smui/textfield';
 	import Tab, { Label } from '@smui/tab';
 	import Button from '@smui/button';
+	import Switch from '@smui/switch';
+
 
 	import TabBar from '@smui/tab-bar';
 	import HelperText from '@smui/textfield/helper-text';
@@ -261,6 +263,36 @@
 							<span slot="label">{option}</span>
 						</FormField>
 					{/each}
+				</div>
+				<div>
+					<FormField>
+						<Switch bind:checked={CN1E} />
+						<span slot="label">Авария ЦН III-1</span>
+					</FormField>
+				</div>
+				<div>
+					<FormField>
+						<Switch bind:checked={CN2E} />
+						<span slot="label">Авария ЦН III-2</span>
+					</FormField>
+				</div>
+				<div>
+					<FormField>
+						<Switch bind:checked={CN3E} />
+						<span slot="label">Авария ЦН III-Р</span>
+					</FormField>
+				</div>
+				<div>
+					<FormField>
+						<Switch bind:checked={TO1E} />
+						<span slot="label">Авария TО III-IVк №1</span>
+					</FormField>
+				</div>
+				<div>
+					<FormField>
+						<Switch bind:checked={TO2E} />
+						<span slot="label">Авария TО III-IVк №1</span>
+					</FormField>
 				</div>
 			</div>
 		{/if}
@@ -674,7 +706,7 @@
 					font-family="Inter"
 					font-size="10"
 					letter-spacing="0em"
-					><tspan x="375.995" y="176.637">&#x422;&#x41e; III-IV &#x43a; &#x2116;1</tspan></text
+					><tspan x="375.995" y="176.637">&#x422;&#x41e; III-IV&#x43a; &#x2116;1</tspan></text
 				>
 			</g>
 			<g id="to_2" class:hasError={TO2E} on:contextmenu|preventDefault={() => (TO2E = !TO2E)}>
@@ -693,7 +725,7 @@
 					font-family="Inter"
 					font-size="10"
 					letter-spacing="0em"
-					><tspan x="374.292" y="432.636">&#x422;&#x41e; III-IV &#x43a; &#x2116;2</tspan></text
+					><tspan x="374.292" y="432.636">&#x422;&#x41e; III-IV&#x43a; &#x2116;2</tspan></text
 				>
 			</g>
 			<g id="reserve tank">
