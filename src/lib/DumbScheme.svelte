@@ -763,7 +763,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="16"
+					font-size="12"
 					letter-spacing="0em"
 					><tspan x="576.34" y="64.0304">&#x41f;&#x43e;&#x442;&#x440;. 1</tspan></text
 				>
