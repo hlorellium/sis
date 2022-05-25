@@ -11,11 +11,11 @@
 	import Radio from '@smui/radio';
 	import FormField from '@smui/form-field';
 
-	import type { PumpStates } from './models/PumpStates';
+	import { PumpStates } from './models/PumpStates';
 
 	let active = 'Параметры насосов';
 
-	const pumpStates = ['HS', 'LS', 'off'];
+	const pumpStates = [PumpStates.HS, PumpStates.LS, PumpStates.off];
 
 	// Pumps errors
 	let CN1E = false;
@@ -28,9 +28,9 @@
 	$: TOE = TO1E || TO2E;
 
 	// State of each pump
-	let statePump1: PumpStates = 'LS';
-	let statePump2: PumpStates = 'off';
-	let statePump3: PumpStates = 'off';
+	let statePump1: PumpStates = PumpStates.LS;
+	let statePump2: PumpStates = PumpStates.off;
+	let statePump3: PumpStates = PumpStates.off;
 
 	let pressureDropPump1 = 0;
 	let pressureDropPump2 = 0;
@@ -52,9 +52,9 @@
 	$: TO = TO1 || TO2;
 
 	// For convenience variables to check if pump is working
-	$: pump1Working = statePump1 !== 'off';
-	$: pump2Working = statePump2 !== 'off';
-	$: pump3Working = statePump3 !== 'off';
+	$: pump1Working = statePump1 !== PumpStates.off;
+	$: pump2Working = statePump2 !== PumpStates.off;
+	$: pump3Working = statePump3 !== PumpStates.off;
 
 	let pumpState: PumpStates;
 
@@ -64,7 +64,7 @@
 		? statePump2
 		: pump3Working
 		? statePump3
-		: 'off';
+		: PumpStates.off;
 
 	// Is valve openned to nourish the system from reserve tank
 	$: nourishing = v7;
@@ -89,9 +89,9 @@
 
 	const coolingSpeed = (mode: PumpStates) => {
 		switch (mode) {
-			case 'HS':
+			case PumpStates.HS:
 				return 'Большая скорость';
-			case 'LS':
+			case PumpStates.LS:
 				return 'Малая скорость';
 			default:
 				return 'Охлаждение отсутствует';
@@ -124,34 +124,34 @@
 	let C6Coef = 1.1;
 
 	// React to accidents
-	$: if (CN1E && statePump1 !== 'off') {
+	$: if (CN1E && statePump1 !== PumpStates.off) {
 		if (!CN2E) {
 			statePump2 = statePump1;
 		} else if (!CN3E) {
 			statePump3 = statePump1;
 		}
 
-		statePump1 = 'off';
+		statePump1 = PumpStates.off;
 	}
 
-	$: if (CN2E && statePump2 !== 'off') {
+	$: if (CN2E && statePump2 !== PumpStates.off) {
 		if (!CN1E) {
 			statePump1 = statePump2;
 		} else if (!CN3E) {
 			statePump3 = statePump2;
 		}
 
-		statePump2 = 'off';
+		statePump2 = PumpStates.off;
 	}
 
-	$: if (CN3E && statePump3 !== 'off') {
+	$: if (CN3E && statePump3 !== PumpStates.off) {
 		if (!CN1E) {
 			statePump1 = statePump3;
 		} else if (!CN2E) {
 			statePump2 = statePump3;
 		}
 
-		statePump3 = 'off';
+		statePump3 = PumpStates.off;
 	}
 
 	$: if (TO1E) {
@@ -191,7 +191,8 @@
 	): number => {
 		const noiseCoef = Math.random() * (1.4 + 0.15) - 0.15;
 
-		const coolingCoef = coolingStatus === 'HS' ? 2 : coolingStatus === 'LS' ? 1 : -1.7;
+		const coolingCoef =
+			coolingStatus === PumpStates.HS ? 2 : coolingStatus === PumpStates.LS ? 1 : -1.7;
 
 		const newTemp =
 			Math.round(
@@ -235,7 +236,7 @@
 		{#if active === 'Параметры насосов'}
 			<div class="pumps-params">
 				<div>
-					<span> Режим работы ЦН III-1 </span>
+					<span class="description"> Режим работы ЦН III-1 </span>
 					{#each pumpStates as option}
 						<FormField>
 							<Radio bind:group={statePump1} value={option} />
@@ -244,7 +245,7 @@
 					{/each}
 				</div>
 				<div>
-					<span> Режим работы ЦН III-2 </span>
+					<span class="description"> Режим работы ЦН III-2 </span>
 					{#each pumpStates as option}
 						<FormField>
 							<Radio bind:group={statePump2} value={option} />
@@ -253,7 +254,7 @@
 					{/each}
 				</div>
 				<div>
-					<span> Режим работы ЦН III-Р </span>
+					<span class="description"> Режим работы ЦН III-Р </span>
 					{#each pumpStates as option}
 						<FormField>
 							<Radio bind:group={statePump3} value={option} />
@@ -322,8 +323,8 @@
 	</div>
 
 	<svg
-		width="683"
-		height="577"
+		width="812"
+		height="692"
 		viewBox="0 0 683 577"
 		fill="none"
 		xmlns="http://www.w3.org/2000/svg"
@@ -762,7 +763,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="12"
+					font-size="16"
 					letter-spacing="0em"
 					><tspan x="576.34" y="64.0304">&#x41f;&#x43e;&#x442;&#x440;. 1</tspan></text
 				>
@@ -772,7 +773,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="10"
+					font-size="16"
 					letter-spacing="0em"><tspan x="586.34" y="34.0304">{C1T}°C</tspan></text
 				>
 			</g>
@@ -801,7 +802,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="10"
+					font-size="16"
 					letter-spacing="0em"><tspan x="583.496" y="106.031">{C2T}°C</tspan></text
 				>
 			</g>
@@ -831,7 +832,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="10"
+					font-size="16"
 					letter-spacing="0em"><tspan x="585.309" y="178.03">{C3T}°C</tspan></text
 				>
 			</g>
@@ -860,7 +861,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="10"
+					font-size="16"
 					letter-spacing="0em"><tspan x="585.28" y="250.03">{C4T}°C</tspan></text
 				>
 			</g>
@@ -889,7 +890,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="10"
+					font-size="16"
 					letter-spacing="0em"><tspan x="585.479" y="322.03">{C5T}°C</tspan></text
 				>
 			</g>
@@ -918,7 +919,7 @@
 					xml:space="preserve"
 					style="white-space: pre"
 					font-family="Inter"
-					font-size="10"
+					font-size="16"
 					letter-spacing="0em"><tspan x="585.385" y="394.03">{C6T}°C</tspan></text
 				>
 			</g>
@@ -927,7 +928,7 @@
 				class:hasError={CN1E}
 				on:click={() => {
 					if (CN1E) return;
-					pump1Working ? (statePump1 = 'off') : (statePump1 = 'HS');
+					pump1Working ? (statePump1 = PumpStates.off) : (statePump1 = PumpStates.HS);
 				}}
 				on:contextmenu|preventDefault={() => (CN1E = !CN1E)}
 				style="--fillColor: {signColor(pump1Working)}"
@@ -968,7 +969,7 @@
 				class:hasError={CN2E}
 				on:click={() => {
 					if (CN2E) return;
-					pump2Working ? (statePump2 = 'off') : (statePump2 = 'HS');
+					pump2Working ? (statePump2 = PumpStates.off) : (statePump2 = PumpStates.HS);
 				}}
 				on:contextmenu|preventDefault={() => (CN2E = !CN2E)}
 				style="--fillColor: {signColor(pump2Working)}"
@@ -1009,7 +1010,7 @@
 				class:hasError={CN3E}
 				on:click={() => {
 					if (CN3E) return;
-					pump3Working ? (statePump3 = 'off') : (statePump3 = 'HS');
+					pump3Working ? (statePump3 = PumpStates.off) : (statePump3 = PumpStates.HS);
 				}}
 				on:contextmenu|preventDefault={() => (CN3E = !CN3E)}
 				style="--fillColor: {signColor(pump3Working)}"
@@ -1126,6 +1127,7 @@
 		display: grid;
 		grid-template-columns: auto auto;
 		column-gap: 32px;
+		font-size: 1.4em;
 	}
 
 	.pumps-params {
@@ -1139,6 +1141,7 @@
 	}
 	.cooling-mode {
 		margin-bottom: 16px;
+		font-size: 1.1rem;
 	}
 	.hasError {
 		--strokeColor: rgb(255, 55, 55);
@@ -1150,10 +1153,23 @@
 		width: 100%;
 	}
 
+	.description {
+		font-size: 0.8em;
+	}
+
 	@keyframes blink {
 		50% {
 			--strokeColor: black;
 			--strokeWidth: 1;
+		}
+	}
+
+	@media (max-width: 1350px) {
+		.container {
+			display: flex;
+			flex-direction: column;
+			grid-template-columns: auto;
+			grid-template-rows: auto auto;
 		}
 	}
 </style>
