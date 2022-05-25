@@ -175,8 +175,6 @@
 		v4 = false;
 	}
 
-	let val = 'HS';
-
 	// Simulate circuit working
 	const updateRbLevel = () => {
 		if (rbLevelDecresing) {
@@ -193,7 +191,7 @@
 	): number => {
 		const noiseCoef = Math.random() * (1.4 + 0.15) - 0.15;
 
-		const coolingCoef = coolingStatus === 'HS' ? 2 : coolingStatus === 'LS' ? 1 : -1;
+		const coolingCoef = coolingStatus === 'HS' ? 2 : coolingStatus === 'LS' ? 1 : -1.7;
 
 		const newTemp =
 			Math.round(
