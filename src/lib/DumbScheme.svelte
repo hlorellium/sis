@@ -6,7 +6,6 @@
 	import Button from '@smui/button';
 	import Switch from '@smui/switch';
 
-
 	import TabBar from '@smui/tab-bar';
 	import HelperText from '@smui/textfield/helper-text';
 	import Radio from '@smui/radio';
@@ -70,7 +69,7 @@
 	// Is valve openned to nourish the system from reserve tank
 	$: nourishing = v7;
 
-	$: waterForPumps = TO;
+	$: waterForPumps = TO || nourishing;
 
 	$: pumpWorking = pump1Working || pump2Working || pump3Working;
 
