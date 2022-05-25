@@ -190,9 +190,9 @@
 		consumerCoef: number,
 		coolingStatus: PumpStates
 	): number => {
-		const noiseCoef = Math.random() * (1.3 + 0.15) - 0.15;
+		const noiseCoef = Math.random() * (1.4 + 0.15) - 0.15;
 
-		const coolingCoef = coolingStatus === 'HS' ? 1.7 : coolingStatus === 'LS' ? 1 : -1;
+		const coolingCoef = coolingStatus === 'HS' ? 2 : coolingStatus === 'LS' ? 1 : -1;
 
 		const newTemp =
 			Math.round(
@@ -223,7 +223,7 @@
 
 <div class="container">
 	<div class="left-side">
-		<div>
+		<div class="cooling-mode">
 			<span>Скорость охлаждения: </span><span>{coolingSpeed(pumpState)}</span>
 		</div>
 
@@ -234,32 +234,34 @@
 		</TabBar>
 
 		{#if active === 'Параметры насосов'}
-			<div>
-				<span> Режим работы ЦН III-1 </span>
-				{#each pumpStates as option}
-					<FormField>
-						<Radio bind:group={statePump1} value={option} />
-						<span slot="label">{option}</span>
-					</FormField>
-				{/each}
-			</div>
-			<div>
-				<span> Режим работы ЦН III-2 </span>
-				{#each pumpStates as option}
-					<FormField>
-						<Radio bind:group={statePump2} value={option} />
-						<span slot="label">{option}</span>
-					</FormField>
-				{/each}
-			</div>
-			<div>
-				<span> Режим работы ЦН III-3 </span>
-				{#each pumpStates as option}
-					<FormField>
-						<Radio bind:group={statePump3} value={option} />
-						<span slot="label">{option}</span>
-					</FormField>
-				{/each}
+			<div class="pumps-params">
+				<div>
+					<span> Режим работы ЦН III-1 </span>
+					{#each pumpStates as option}
+						<FormField>
+							<Radio bind:group={statePump1} value={option} />
+							<span slot="label">{option}</span>
+						</FormField>
+					{/each}
+				</div>
+				<div>
+					<span> Режим работы ЦН III-2 </span>
+					{#each pumpStates as option}
+						<FormField>
+							<Radio bind:group={statePump2} value={option} />
+							<span slot="label">{option}</span>
+						</FormField>
+					{/each}
+				</div>
+				<div>
+					<span> Режим работы ЦН III-Р </span>
+					{#each pumpStates as option}
+						<FormField>
+							<Radio bind:group={statePump3} value={option} />
+							<span slot="label">{option}</span>
+						</FormField>
+					{/each}
+				</div>
 			</div>
 		{/if}
 
@@ -1096,9 +1098,18 @@
 		grid-template-columns: auto auto;
 		column-gap: 32px;
 	}
+
+	.pumps-params {
+		display: flex;
+		flex-direction: column;
+		row-gap: 16px;
+	}
 	#scheme {
 		--strokeColor: black;
 		--strokeWidth: 1;
+	}
+	.cooling-mode {
+		margin-bottom: 16px;
 	}
 	.hasError {
 		--strokeColor: rgb(255, 55, 55);
