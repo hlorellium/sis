@@ -10,7 +10,6 @@
 	import HelperText from '@smui/textfield/helper-text';
 	import Radio from '@smui/radio';
 	import FormField from '@smui/form-field';
-	import Button from '@smui/button';
 
 	import { PumpStates } from './models/PumpStates';
 	import { SchemeModes } from './enums/scheme-modes';
@@ -19,11 +18,11 @@
 
 	let schemeModes = [SchemeModes.Main, SchemeModes.Reserve];
 
-	let selected = SchemeModes.Main;
+	let selectedMode = SchemeModes.Main;
 
-	$: mainMode = selected === SchemeModes.Main;
+	$: mainMode = selectedMode === SchemeModes.Main;
 
-	$: reserveMode = selected === SchemeModes.Reserve;
+	$: reserveMode = selectedMode === SchemeModes.Reserve;
 
 	$: modeName = mainMode ? SchemeModes.Main : reserveMode ? SchemeModes.Reserve : 'Режим не выбран';
 
@@ -116,7 +115,7 @@
 
 	$: discTONW = {
 		text: 'Теплообменники остановлены. Откройте К1 и К2, либо К3 и К4.',
-		state: mainMode && !TO && !discNoCooling,
+		state: !TO && !(CNE || (TO1E && TO2E)),
 		color: 'error'
 	};
 
@@ -133,7 +132,7 @@
 	};
 	$: discCNR = {
 		text: 'Включите ЦН III-Р',
-		state: reserveMode && CN3E && !pump3Working,
+		state: reserveMode && !CN3E && !pump3Working,
 		color: 'error'
 	};
 
@@ -281,6 +280,18 @@
 		}
 	};
 
+	$: if (!statePump1) {
+		setTimeout(() => (statePump1 = PumpStates.off), 0);
+	}
+
+	$: if (!statePump2) {
+		setTimeout(() => (statePump2 = PumpStates.off), 0);
+	}
+
+	$: if (!statePump3) {
+		setTimeout(() => (statePump3 = PumpStates.off), 0);
+	}
+
 	const updateTemperature = (
 		currentTemperature: number,
 		consumerCoef: number,
@@ -325,7 +336,7 @@
 			style="padding: 0 1rem; font-size: 1.2rem; display: flex; align-items: center; column-gap: 16px;"
 		>
 			<span class="mdc-typography--headline6" style="margin: 0; color: #888;">Выбор режима</span>
-			<Set chips={schemeModes} let:chip choice bind:selected>
+			<Set chips={schemeModes} let:chip choice bind:selected={selectedMode}>
 				<Chip {chip}>
 					<Text>{chip}</Text>
 				</Chip>
@@ -363,31 +374,37 @@
 		{#if active === 'Управление ОУ'}
 			<div class="pumps-params">
 				<div>
-					<span class="description"> Режим работы ЦН III-1 </span>
-					{#each pumpStates as option}
-						<FormField>
-							<Radio bind:group={statePump1} value={option} />
-							<span slot="label">{option}</span>
-						</FormField>
-					{/each}
+					<span class="description mdc-typography--headline6"> Режим работы ЦН III-1 </span>
+					<!--{#each pumpStates as option}-->
+					<!--	<FormField>-->
+					<!--		<Radio bind:group={statePump1} value={option} />-->
+					<!--		<span slot="label">{option}</span>-->
+					<!--	</FormField>-->
+					<!--{/each}-->
+
+					<Set chips={pumpStates} let:chip choice bind:selected={statePump1}>
+						<Chip {chip}>
+							<Text>{chip}</Text>
+						</Chip>
+					</Set>
 				</div>
+
 				<div>
 					<span class="description"> Режим работы ЦН III-2 </span>
-					{#each pumpStates as option}
-						<FormField>
-							<Radio bind:group={statePump2} value={option} />
-							<span slot="label">{option}</span>
-						</FormField>
-					{/each}
+					<Set chips={pumpStates} let:chip choice bind:selected={statePump2}>
+						<Chip {chip}>
+							<Text>{chip}</Text>
+						</Chip>
+					</Set>
 				</div>
+
 				<div>
 					<span class="description"> Режим работы ЦН III-Р </span>
-					{#each pumpStates as option}
-						<FormField>
-							<Radio bind:group={statePump3} value={option} />
-							<span slot="label">{option}</span>
-						</FormField>
-					{/each}
+					<Set chips={pumpStates} let:chip choice bind:selected={statePump3}>
+						<Chip {chip}>
+							<Text>{chip}</Text>
+						</Chip>
+					</Set>
 				</div>
 			</div>
 		{/if}
@@ -719,10 +736,13 @@
 							letter-spacing="0em"><tspan x="267" y="224.364">&#x41a;7</tspan></text
 						>
 					</g>
-					<g id="valve_2" on:click={() => {
-					if (TOE) return;
-					v2 = !v2;
-				}}>
+					<g
+						id="valve_2"
+						on:click={() => {
+							if (TOE) return;
+							v2 = !v2;
+						}}
+					>
 						<path
 							id="Vector 21_2"
 							d="M394 73.0001L423 73.0001L415.5 96.5001L401 96.5001L394 73.0001Z"
@@ -745,10 +765,13 @@
 							letter-spacing="0em"><tspan x="427" y="84.3638">&#x41a;2</tspan></text
 						>
 					</g>
-					<g id="valve_3" on:click={() => {
-					if (TOE) return;
-					v4 = !v4;
-				}}>
+					<g
+						id="valve_3"
+						on:click={() => {
+							if (TOE) return;
+							v4 = !v4;
+						}}
+					>
 						<path
 							id="Vector 21_3"
 							d="M394 475L423 475L415.5 498.5L401 498.5L394 475Z"
@@ -771,10 +794,13 @@
 							letter-spacing="0em"><tspan x="427" y="486.364">&#x41a;4</tspan></text
 						>
 					</g>
-					<g id="valve_4" on:click={() => {
-					if (TOE) return;
-					v1 = !v1;
-				}}>
+					<g
+						id="valve_4"
+						on:click={() => {
+							if (TOE) return;
+							v1 = !v1;
+						}}
+					>
 						<path
 							id="Vector 21_4"
 							d="M395 225L424 225L416.5 248.5L402 248.5L395 225Z"
@@ -797,10 +823,13 @@
 							letter-spacing="0em"><tspan x="428" y="236.364">&#x41a;1</tspan></text
 						>
 					</g>
-					<g id="valve_5" on:click={() => {
-					if (TOE) return;
-					v3 = !v3;
-				}}>
+					<g
+						id="valve_5"
+						on:click={() => {
+							if (TOE) return;
+							v3 = !v3;
+						}}
+					>
 						<path
 							id="Vector 21_5"
 							d="M394 326L423 326L415.5 349.5L401 349.5L394 326Z"
@@ -1063,9 +1092,9 @@
 						id="Pump"
 						class:hasError={CN1E}
 						on:click={() => {
-					if (CN1E) return;
-					pump1Working ? (statePump1 = PumpStates.off) : (statePump1 = PumpStates.HS);
-				}}
+							if (CN1E) return;
+							pump1Working ? (statePump1 = PumpStates.off) : (statePump1 = PumpStates.HS);
+						}}
 						on:contextmenu|preventDefault={() => (CN1E = !CN1E)}
 						style="--fillColor: {signColor(pump1Working)}"
 					>
@@ -1104,9 +1133,9 @@
 						id="Pump_2"
 						class:hasError={CN2E}
 						on:click={() => {
-					if (CN2E) return;
-					pump2Working ? (statePump2 = PumpStates.off) : (statePump2 = PumpStates.HS);
-				}}
+							if (CN2E) return;
+							pump2Working ? (statePump2 = PumpStates.off) : (statePump2 = PumpStates.HS);
+						}}
 						on:contextmenu|preventDefault={() => (CN2E = !CN2E)}
 						style="--fillColor: {signColor(pump2Working)}"
 					>
@@ -1145,9 +1174,9 @@
 						id="Pump_3"
 						class:hasError={CN3E}
 						on:click={() => {
-					if (CN3E) return;
-					pump3Working ? (statePump3 = PumpStates.off) : (statePump3 = PumpStates.HS);
-				}}
+							if (CN3E) return;
+							pump3Working ? (statePump3 = PumpStates.off) : (statePump3 = PumpStates.HS);
+						}}
 						on:contextmenu|preventDefault={() => (CN3E = !CN3E)}
 						style="--fillColor: {signColor(pump3Working)}"
 					>
@@ -1281,11 +1310,10 @@
 		--strokeColor: black;
 		--strokeWidth: 1;
 
-		background: #FFFFFF;
+		background: #ffffff;
 		border-radius: 31px;
 
 		padding: 16px 24px;
-
 	}
 	.cooling-mode {
 		margin-bottom: 16px;
@@ -1303,26 +1331,29 @@
 
 	.description {
 		font-size: 0.8em;
+		color: #2f2f2f;
 	}
 
 	.dialog-block {
 		font-size: 1rem;
 		width: 480px;
-		height: 200px;
+		height: 150px;
 		overflow: auto;
 		border-radius: 3px;
 	}
 
-
-	:global(.mdc-chip){
-min-width: 76px !important;
-min-height: 76px !important;
-}
-:global(.mdc-chip__text) {
-font-weight: bold;
-font-size: 1.4rem;
-text-align: center;
-}
+	:global(.mdc-chip) {
+		min-width: 76px !important;
+		min-height: 70px !important;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+	}
+	:global(.mdc-chip__text) {
+		font-weight: bold;
+		font-size: 1.4rem;
+		text-align: center;
+	}
 	/* :global(.mdc-chip--selected){
 background-color: orange !important;
 } */
