@@ -8,7 +8,6 @@
 
 	import TabBar from '@smui/tab-bar';
 	import HelperText from '@smui/textfield/helper-text';
-	import Radio from '@smui/radio';
 	import FormField from '@smui/form-field';
 
 	import { PumpStates } from './models/PumpStates';
@@ -28,7 +27,7 @@
 
 	let nourishingMode = false;
 
-	const pumpStates = [PumpStates.HS, PumpStates.LS, PumpStates.off];
+	const pumpStates = [PumpStates.HS, PumpStates.LS, PumpStates.Off];
 
 	// Pumps errors
 	let CN1E = false;
@@ -43,13 +42,9 @@
 	$: TOE = TO1E || TO2E;
 
 	// State of each pump
-	let statePump1: PumpStates = PumpStates.LS;
-	let statePump2: PumpStates = PumpStates.off;
-	let statePump3: PumpStates = PumpStates.off;
-
-	let pressureDropPump1 = 0;
-	let pressureDropPump2 = 0;
-	let pressureDropPump3 = 0;
+	let CN1State: PumpStates = PumpStates.LS;
+	let CN2State: PumpStates = PumpStates.Off;
+	let CN3State: PumpStates = PumpStates.Off;
 
 	// Is valve openned
 	let v1 = true;
@@ -67,28 +62,22 @@
 	$: TO = TO1 || TO2;
 
 	// For convenience variables to check if pump is working
-	$: pump1Working = statePump1 !== PumpStates.off;
-	$: pump2Working = statePump2 !== PumpStates.off;
-	$: pump3Working = statePump3 !== PumpStates.off;
+	$: CN1 = CN1State !== PumpStates.Off;
+	$: CN2 = CN2State !== PumpStates.Off;
+	$: CN3 = CN3State !== PumpStates.Off;
 
-	$: workingPumpsLength = [pump1Working, pump2Working, pump3Working].filter(Boolean).length;
+	$: workingPumpsLength = [CN1, CN2, CN3].filter(Boolean).length;
 
 	let pumpState: PumpStates;
 
-	$: pumpState = pump1Working
-		? statePump1
-		: pump2Working
-		? statePump2
-		: pump3Working
-		? statePump3
-		: PumpStates.off;
+	$: pumpState = CN1 ? CN1State : CN2 ? CN2State : CN3 ? CN3State : PumpStates.Off;
 
 	// Is valve openned to nourish the system from reserve tank
 	$: nourishing = v7;
 
 	$: waterForPumps = TO || nourishing;
 
-	$: pumpWorking = pump1Working || pump2Working || pump3Working;
+	$: pumpWorking = CN1 || CN2 || CN3;
 
 	$: isCoolingConsumers = pumpWorking && waterForPumps;
 
@@ -132,7 +121,7 @@
 	};
 	$: discCNR = {
 		text: 'Включите ЦН III-Р',
-		state: reserveMode && !CN3E && !pump3Working,
+		state: reserveMode && !CN3E && !CN3,
 		color: 'error'
 	};
 
@@ -220,34 +209,34 @@
 	let C6Coef = 1.1;
 
 	// React to accidents
-	$: if (CN1E && statePump1 !== PumpStates.off) {
+	$: if (CN1E && CN1State !== PumpStates.Off) {
 		if (!CN2E) {
-			statePump2 = statePump1;
+			CN2State = CN1State;
 		} else if (!CN3E) {
-			statePump3 = statePump1;
+			CN3State = CN1State;
 		}
 
-		statePump1 = PumpStates.off;
+		CN1State = PumpStates.Off;
 	}
 
-	$: if (CN2E && statePump2 !== PumpStates.off) {
+	$: if (CN2E && CN2State !== PumpStates.Off) {
 		if (!CN1E) {
-			statePump1 = statePump2;
+			CN1State = CN2State;
 		} else if (!CN3E) {
-			statePump3 = statePump2;
+			CN3State = CN2State;
 		}
 
-		statePump2 = PumpStates.off;
+		CN2State = PumpStates.Off;
 	}
 
-	$: if (CN3E && statePump3 !== PumpStates.off) {
+	$: if (CN3E && CN3State !== PumpStates.Off) {
 		if (!CN1E) {
-			statePump1 = statePump3;
+			CN1State = CN3State;
 		} else if (!CN2E) {
-			statePump2 = statePump3;
+			CN2State = CN3State;
 		}
 
-		statePump3 = PumpStates.off;
+		CN3State = PumpStates.Off;
 	}
 
 	$: if (TO1E) {
@@ -280,16 +269,16 @@
 		}
 	};
 
-	$: if (!statePump1) {
-		setTimeout(() => (statePump1 = PumpStates.off), 0);
+	$: if (!CN1State) {
+		setTimeout(() => (CN1State = PumpStates.Off), 0);
 	}
 
-	$: if (!statePump2) {
-		setTimeout(() => (statePump2 = PumpStates.off), 0);
+	$: if (!CN2State) {
+		setTimeout(() => (CN2State = PumpStates.Off), 0);
 	}
 
-	$: if (!statePump3) {
-		setTimeout(() => (statePump3 = PumpStates.off), 0);
+	$: if (!CN3State) {
+		setTimeout(() => (CN3State = PumpStates.Off), 0);
 	}
 
 	const updateTemperature = (
@@ -382,7 +371,7 @@
 					<!--	</FormField>-->
 					<!--{/each}-->
 
-					<Set chips={pumpStates} let:chip choice bind:selected={statePump1}>
+					<Set chips={pumpStates} let:chip choice bind:selected={CN1State}>
 						<Chip {chip}>
 							<Text>{chip}</Text>
 						</Chip>
@@ -391,7 +380,7 @@
 
 				<div>
 					<span class="description"> Режим работы ЦН III-2 </span>
-					<Set chips={pumpStates} let:chip choice bind:selected={statePump2}>
+					<Set chips={pumpStates} let:chip choice bind:selected={CN2State}>
 						<Chip {chip}>
 							<Text>{chip}</Text>
 						</Chip>
@@ -400,7 +389,7 @@
 
 				<div>
 					<span class="description"> Режим работы ЦН III-Р </span>
-					<Set chips={pumpStates} let:chip choice bind:selected={statePump3}>
+					<Set chips={pumpStates} let:chip choice bind:selected={CN3State}>
 						<Chip {chip}>
 							<Text>{chip}</Text>
 						</Chip>
@@ -563,7 +552,7 @@
 							width="96"
 							height="12"
 							transform="rotate(90 12.0002 18.0002)"
-							fill={pipeColor(pump1Working && waterForPumps)}
+							fill={pipeColor(CN1 && waterForPumps)}
 						/>
 						<rect
 							id="pump 2 or 1 cooling_3"
@@ -572,7 +561,7 @@
 							width="95"
 							height="12"
 							transform="rotate(-180 95 25)"
-							fill={pipeColor(pump1Working && waterForPumps)}
+							fill={pipeColor(CN1 && waterForPumps)}
 						/>
 					</g>
 					<rect
@@ -581,7 +570,7 @@
 						y="114"
 						width="92"
 						height="12"
-						fill={pipeColor(pump2Working && waterForPumps)}
+						fill={pipeColor(CN2 && waterForPumps)}
 					/>
 					<rect
 						id="pump r cooling"
@@ -589,7 +578,7 @@
 						y="215"
 						width="95"
 						height="12"
-						fill={pipeColor(pump3Working && waterForPumps)}
+						fill={pipeColor(CN3 && waterForPumps)}
 					/>
 					<rect
 						id="pump 2 or 1 cooling"
@@ -598,7 +587,7 @@
 						width="194"
 						height="12"
 						transform="rotate(90 12.0002 114)"
-						fill={pipeColor((pump1Working || pump2Working) && waterForPumps)}
+						fill={pipeColor((CN1 || CN2) && waterForPumps)}
 					/>
 					<rect id="v7 pumps" x="230" y="237" width="37" height="12" fill={pipeColor(nourishing)} />
 					<g id="f v6">
@@ -713,7 +702,7 @@
 							fill="var(--fillColor)"
 						/>
 					</g>
-					<g id="valve" on:click={() => (v7 = !v7)}>
+					<g id="valve" class="interactive" on:click={() => (v7 = !v7)}>
 						<path
 							id="Vector 21"
 							d="M267 257V228L290.5 235.5V250L267 257Z"
@@ -738,6 +727,7 @@
 					</g>
 					<g
 						id="valve_2"
+						class="interactive"
 						on:click={() => {
 							if (TOE) return;
 							v2 = !v2;
@@ -767,6 +757,7 @@
 					</g>
 					<g
 						id="valve_3"
+						class="interactive"
 						on:click={() => {
 							if (TOE) return;
 							v4 = !v4;
@@ -796,6 +787,7 @@
 					</g>
 					<g
 						id="valve_4"
+						class="interactive"
 						on:click={() => {
 							if (TOE) return;
 							v1 = !v1;
@@ -825,6 +817,7 @@
 					</g>
 					<g
 						id="valve_5"
+						class="interactive"
 						on:click={() => {
 							if (TOE) return;
 							v3 = !v3;
@@ -1090,13 +1083,14 @@
 					</g>
 					<g
 						id="Pump"
+						class="interactive"
 						class:hasError={CN1E}
 						on:click={() => {
 							if (CN1E) return;
-							pump1Working ? (statePump1 = PumpStates.off) : (statePump1 = PumpStates.HS);
+							CN1 ? (CN1State = PumpStates.Off) : (CN1State = PumpStates.HS);
 						}}
 						on:contextmenu|preventDefault={() => (CN1E = !CN1E)}
-						style="--fillColor: {signColor(pump1Working)}"
+						style="--fillColor: {signColor(CN1)}"
 					>
 						<path
 							id="Ellipse 3"
@@ -1131,13 +1125,14 @@
 					</g>
 					<g
 						id="Pump_2"
+						class="interactive"
 						class:hasError={CN2E}
 						on:click={() => {
 							if (CN2E) return;
-							pump2Working ? (statePump2 = PumpStates.off) : (statePump2 = PumpStates.HS);
+							CN2 ? (CN2State = PumpStates.Off) : (CN2State = PumpStates.HS);
 						}}
 						on:contextmenu|preventDefault={() => (CN2E = !CN2E)}
-						style="--fillColor: {signColor(pump2Working)}"
+						style="--fillColor: {signColor(CN2)}"
 					>
 						<path
 							id="Ellipse 3_2"
@@ -1172,13 +1167,14 @@
 					</g>
 					<g
 						id="Pump_3"
+						class="interactive"
 						class:hasError={CN3E}
 						on:click={() => {
 							if (CN3E) return;
-							pump3Working ? (statePump3 = PumpStates.off) : (statePump3 = PumpStates.HS);
+							CN3 ? (CN3State = PumpStates.Off) : (CN3State = PumpStates.HS);
 						}}
 						on:contextmenu|preventDefault={() => (CN3E = !CN3E)}
-						style="--fillColor: {signColor(pump3Working)}"
+						style="--fillColor: {signColor(CN3)}"
 					>
 						<path
 							id="Ellipse 3_3"
@@ -1212,7 +1208,7 @@
 							><tspan x="95.0001" y="210.864">&#x426;&#x41d; III-&#x420;</tspan></text
 						>
 					</g>
-					<g id="valve_6" on:click={() => (v6 = !v6)}>
+					<g id="valve_6" class="interactive" on:click={() => (v6 = !v6)}>
 						<path
 							id="Vector 21_6"
 							d="M158 369V340L181.5 347.5V362L158 369Z"
@@ -1235,7 +1231,7 @@
 							letter-spacing="0em"><tspan x="158" y="336.364">&#x41a;6</tspan></text
 						>
 					</g>
-					<g id="valve_7" on:click={() => (v5 = !v5)}>
+					<g id="valve_7" class="interactive" on:click={() => (v5 = !v5)}>
 						<path
 							id="Vector 21_7"
 							d="M35.0002 469V440L58.5002 447.5V462L35.0002 469Z"
@@ -1337,7 +1333,7 @@
 	.dialog-block {
 		font-size: 1rem;
 		width: 480px;
-		height: 150px;
+		height: 100px;
 		overflow: auto;
 		border-radius: 3px;
 	}
@@ -1345,18 +1341,19 @@
 	:global(.mdc-chip) {
 		min-width: 76px !important;
 		min-height: 70px !important;
-			display: flex;
-			align-items: center;
-			justify-content: center;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	:global(.mdc-chip__text) {
 		font-weight: bold;
 		font-size: 1.4rem;
 		text-align: center;
 	}
-	/* :global(.mdc-chip--selected){
-background-color: orange !important;
-} */
+
+	.interactive {
+		cursor: pointer;
+	}
 
 	@keyframes blink {
 		50% {

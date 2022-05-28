@@ -1,7 +1,7 @@
 // export type PumpStates = 'Отключен' | 'БС' | 'МС';
 
 export enum PumpStates {
-	'off' = 'Отключен',
+	'Off' = 'Отключен',
 	'HS' = 'БС',
 	'LS' = 'МС'
 }
