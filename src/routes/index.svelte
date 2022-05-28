@@ -1,9 +1,9 @@
 <script>
-	import DumbScheme from '$lib/DumbScheme.svelte';
+import Scheme from '../lib/Scheme.svelte';
 </script>
 
 <div class="container">
-	<DumbScheme />
+	<Scheme />
 </div>
 
 <style>
