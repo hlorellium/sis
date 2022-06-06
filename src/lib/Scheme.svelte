@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { COOLING_STEP } from './consts/simulation';
+	import { COOLING_STEP, RB_CHANGE_SPEED, RB_MAX_LEVEL, RB_MIN_LEVEL } from './consts/simulation';
 	import Textfield from '@smui/textfield';
 	import Tab, { Label } from '@smui/tab';
 	import Switch from '@smui/switch';
@@ -24,8 +24,6 @@
 	$: reserveMode = selectedMode === SchemeModes.Reserve;
 
 	$: modeName = mainMode ? SchemeModes.Main : reserveMode ? SchemeModes.Reserve : 'Режим не выбран';
-
-	let nourishingMode = false;
 
 	const pumpStates = [PumpStates.HS, PumpStates.LS, PumpStates.Off];
 
@@ -183,13 +181,8 @@
 
 	let rbLevel = 50;
 
-	const rbChangeSpeed = 1;
-
-	const rbMaxLevel = 100;
-	const rbMinLevel = 0;
-
-	$: rbLevelDecresing = nourishing && rbLevel > rbMinLevel;
-	$: rbLevelIncreasing = !nourishing && rbLevel < rbMaxLevel;
+	$: rbLevelDecresing = nourishing && rbLevel > RB_MIN_LEVEL;
+	$: rbLevelIncreasing = !nourishing && rbLevel < RB_MAX_LEVEL;
 
 	// Consumers temperature
 	let C1T = 25;
@@ -263,9 +256,9 @@
 	// Simulate circuit working
 	const updateRbLevel = () => {
 		if (rbLevelDecresing) {
-			rbLevel = rbLevel - rbChangeSpeed;
+			rbLevel = rbLevel - RB_CHANGE_SPEED;
 		} else if (rbLevelIncreasing) {
-			rbLevel = rbLevel + rbChangeSpeed;
+			rbLevel = rbLevel + RB_CHANGE_SPEED;
 		}
 	};
 
@@ -291,10 +284,9 @@
 		const coolingCoef =
 			coolingStatus === PumpStates.HS ? 2 : coolingStatus === PumpStates.LS ? 1 : -1.7;
 
-		const newTemp =
-			Math.round(
-				(currentTemperature - COOLING_STEP * (coolingCoef / 10) * noiseCoef * consumerCoef) * 100
-			) / 100;
+		const newTemp = Math.round(
+			currentTemperature - COOLING_STEP * (coolingCoef / 10) * noiseCoef * consumerCoef
+		);
 
 		return newTemp > 0 ? newTemp : 0;
 	};
@@ -314,7 +306,7 @@
 	}
 
 	onMount(() => {
-		setInterval(update, 100);
+		setInterval(update, 1000);
 	});
 </script>
 
@@ -322,26 +314,26 @@
 	<div class="left-side">
 		<div
 			class="mode"
-			style="padding: 0 1rem; font-size: 1.2rem; display: flex; align-items: center; column-gap: 16px;"
+			style="padding: 0 1rem; font-size: 1rem; display: flex; align-items: center; column-gap: 16px;"
 		>
-			<span class="mdc-typography--headline6" style="margin: 0; color: #888;">Выбор режима</span>
+			<span class="mdc-typography--headline6 mode-choice" style="margin: 0; color: #888;">Выбор режима</span>
 			<Set chips={schemeModes} let:chip choice bind:selected={selectedMode}>
 				<Chip {chip}>
 					<Text>{chip}</Text>
 				</Chip>
 			</Set>
 		</div>
-		<div class="mode" style="padding: 0 1rem; font-size: 1.2rem;">
+		<div class="mode" style="padding: 0 1rem; font-size: 1rem;">
 			<span class="mdc-typography--headline6" style="margin: 0; color: #888;">Режим работы: </span>
 			<span style="font-weight: bold;">{modeName}</span>
 		</div>
-		<div class="cooling-mode" style="padding: 0 1rem; font-size: 1.2rem;">
+		<div class="cooling-mode" style="padding: 0 1rem; font-size: 1rem;">
 			<span class="mdc-typography--headline6" style="margin: 0; color: #888;"
 				>Скорость охлаждения:
 			</span><span style="font-weight: bold;">{coolingSpeed}</span>
 		</div>
 
-		<div style="padding: 1rem; font-size: 1.2rem;">
+		<div style="padding: 1rem; font-size: 1rem;">
 			<span class="mdc-typography--headline6" style="margin: 0; color: #888;">
 				Информационная поддержка
 			</span>
@@ -354,7 +346,7 @@
 			</ul>
 		</div>
 
-		<TabBar tabs={['Управление ОУ', 'Параметры моделирования']} let:tab bind:active>
+		<TabBar tabs={['Управление ОУ', 'Моделирование']} let:tab bind:active>
 			<Tab {tab} minWidth>
 				<Label>{tab}</Label>
 			</Tab>
@@ -364,12 +356,6 @@
 			<div class="pumps-params">
 				<div>
 					<span class="description mdc-typography--headline6"> Режим работы ЦН III-1 </span>
-					<!--{#each pumpStates as option}-->
-					<!--	<FormField>-->
-					<!--		<Radio bind:group={statePump1} value={option} />-->
-					<!--		<span slot="label">{option}</span>-->
-					<!--	</FormField>-->
-					<!--{/each}-->
 
 					<Set chips={pumpStates} let:chip choice bind:selected={CN1State}>
 						<Chip {chip}>
@@ -398,7 +384,7 @@
 			</div>
 		{/if}
 
-		{#if active === 'Параметры моделирования'}
+		{#if active === 'Моделирование'}
 			<div class="errors-controls">
 				<div>
 					<FormField>
@@ -1290,7 +1276,7 @@
 		display: grid;
 		grid-template-columns: auto auto;
 		column-gap: 32px;
-		font-size: 1.4em;
+		font-size: 1rem;
 		grid-template-rows: auto;
 
 		--error-color: #d02626;
@@ -1313,7 +1299,7 @@
 	}
 	.cooling-mode {
 		margin-bottom: 16px;
-		font-size: 1.1rem;
+		font-size: 1rem;
 	}
 	.hasError {
 		--strokeColor: #ff3737;
@@ -1327,7 +1313,7 @@
 
 	.description {
 		font-size: 0.8em;
-		color: #2f2f2f;
+		color: #585858;
 	}
 
 	.dialog-block {
@@ -1347,7 +1333,7 @@
 	}
 	:global(.mdc-chip__text) {
 		font-weight: bold;
-		font-size: 1.4rem;
+		font-size: 1.2rem;
 		text-align: center;
 	}
 
@@ -1363,11 +1349,23 @@
 	}
 
 	@media (max-width: 1350px) {
+		.mode {
+			margin-bottom: 14px;
+		}
+		.dialog-block {
+			width: 400px;
+		}
 		.container {
 			display: flex;
-			flex-direction: column;
-			grid-template-columns: auto;
-			grid-template-rows: auto auto;
+		}
+	}
+
+	@media (max-width: 1350px) {
+		.mode-choice {
+			width:  100px;
+		}
+		.dialog-block {
+			width: 330px;
 		}
 	}
 </style>
