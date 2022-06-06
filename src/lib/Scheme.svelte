@@ -1342,7 +1342,7 @@
 	}
 
 	@keyframes blink {
-		50% {
+		30% {
 			--strokeColor: black;
 			--strokeWidth: 1;
 		}
