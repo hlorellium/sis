@@ -12,6 +12,7 @@
 
 	import { PumpStates } from './models/PumpStates';
 	import { SchemeModes } from './enums/scheme-modes';
+	import { MnemoschemeModes } from './enums/mnemoscheme-modes';
 
 	let active = 'Управление ОУ';
 
@@ -316,7 +317,9 @@
 			class="mode"
 			style="padding: 0 1rem; font-size: 1rem; display: flex; align-items: center; column-gap: 16px;"
 		>
-			<span class="mdc-typography--headline6 mode-choice" style="margin: 0; color: #888;">Выбор режима</span>
+			<span class="mdc-typography--headline6 mode-choice" style="margin: 0; color: #888;"
+				>Выбор режима</span
+			>
 			<Set chips={schemeModes} let:chip choice bind:selected={selectedMode}>
 				<Chip {chip}>
 					<Text>{chip}</Text>
@@ -385,62 +388,66 @@
 		{/if}
 
 		{#if active === 'Моделирование'}
-			<div class="errors-controls">
-				<div>
-					<FormField>
-						<Switch bind:checked={CN1E} touch />
-						<span slot="label">Авария ЦН III-1</span>
-					</FormField>
+			<div class="simulating">
+				<div class="errors-controls">
+					<div>
+						<FormField>
+							<Switch bind:checked={CN1E} touch />
+							<span slot="label">Авария ЦН III-1</span>
+						</FormField>
+					</div>
+					<div>
+						<FormField>
+							<Switch bind:checked={CN2E} touch />
+							<span slot="label">Авария ЦН III-2</span>
+						</FormField>
+					</div>
+					<div>
+						<FormField>
+							<Switch bind:checked={CN3E} touch />
+							<span slot="label">Авария ЦН III-Р</span>
+						</FormField>
+					</div>
+					<div>
+						<FormField>
+							<Switch bind:checked={TO1E} touch />
+							<span slot="label">Авария TО III-IVк №1</span>
+						</FormField>
+					</div>
+					<div>
+						<FormField>
+							<Switch bind:checked={TO2E} touch />
+							<span slot="label">Авария TО III-IVк №1</span>
+						</FormField>
+					</div>
 				</div>
-				<div>
-					<FormField>
-						<Switch bind:checked={CN2E} touch />
-						<span slot="label">Авария ЦН III-2</span>
-					</FormField>
-				</div>
-				<div>
-					<FormField>
-						<Switch bind:checked={CN3E} touch />
-						<span slot="label">Авария ЦН III-Р</span>
-					</FormField>
-				</div>
-				<div>
-					<FormField>
-						<Switch bind:checked={TO1E} touch />
-						<span slot="label">Авария TО III-IVк №1</span>
-					</FormField>
-				</div>
-				<div>
-					<FormField>
-						<Switch bind:checked={TO2E} touch />
-						<span slot="label">Авария TО III-IVк №1</span>
-					</FormField>
+
+				<div class="config">
+					<Textfield bind:value={C1Coef} label="Коэффицент Потр. 1" type="number" input$step="0.1">
+						<HelperText slot="helper">Коэффицент охлаждения Потр. 1</HelperText>
+					</Textfield>
+
+					<Textfield bind:value={C2Coef} label="Коэффицент Потр. 2" type="number" input$step="0.1">
+						<HelperText slot="helper">Коэффицент охлаждения Потр. 2</HelperText>
+					</Textfield>
+
+					<Textfield bind:value={C3Coef} label="Коэффицент Потр. 3" type="number" input$step="0.1">
+						<HelperText slot="helper">Коэффицент охлаждения Потр. 3</HelperText>
+					</Textfield>
+
+					<Textfield bind:value={C4Coef} label="Коэффицент Потр. 4" type="number" input$step="0.1">
+						<HelperText slot="helper">Коэффицент охлаждения Потр. 4</HelperText>
+					</Textfield>
+
+					<Textfield bind:value={C5Coef} label="Коэффицент Потр. 5" type="number" input$step="0.1">
+						<HelperText slot="helper">Коэффицент охлаждения Потр. 5</HelperText>
+					</Textfield>
+
+					<Textfield bind:value={C6Coef} label="Коэффицент Потр. 6" type="number" input$step="0.1">
+						<HelperText slot="helper">Коэффицент охлаждения Потр. 6</HelperText>
+					</Textfield>
 				</div>
 			</div>
-
-			<Textfield bind:value={C1Coef} label="Коэффицент Потр. 1" type="number" input$step="0.1">
-				<HelperText slot="helper">Коэффицент охлаждения Потр. 1</HelperText>
-			</Textfield>
-
-			<Textfield bind:value={C2Coef} label="Коэффицент Потр. 2" type="number" input$step="0.1">
-				<HelperText slot="helper">Коэффицент охлаждения Потр. 2</HelperText>
-			</Textfield>
-
-			<Textfield bind:value={C3Coef} label="Коэффицент Потр. 3" type="number" input$step="0.1">
-				<HelperText slot="helper">Коэффицент охлаждения Потр. 3</HelperText>
-			</Textfield>
-
-			<Textfield bind:value={C4Coef} label="Коэффицент Потр. 4" type="number" input$step="0.1">
-				<HelperText slot="helper">Коэффицент охлаждения Потр. 4</HelperText>
-			</Textfield>
-
-			<Textfield bind:value={C5Coef} label="Коэффицент Потр. 5" type="number" input$step="0.1">
-				<HelperText slot="helper">Коэффицент охлаждения Потр. 5</HelperText>
-			</Textfield>
-
-			<Textfield bind:value={C6Coef} label="Коэффицент Потр. 6" type="number" input$step="0.1">
-				<HelperText slot="helper">Коэффицент охлаждения Потр. 6</HelperText>
-			</Textfield>
 		{/if}
 	</div>
 	<div class="scheme-container">
@@ -600,8 +607,8 @@
 						fill={pipeColor(isCoolingConsumers)}
 					/>
 					<g id="v5 f">
-						<path d="M116 457V436L128 436V457H116Z" fill={pipeColor(isCoolingConsumers)} />
-						<path d="M128 461H84.0002V449H128V461Z" fill={pipeColor(isCoolingConsumers)} />
+						<path d="M116 457V436L128 436V457H116Z" fill={pipeColor(isCoolingConsumers && v5)} />
+						<path d="M128 461H84.0002V449H128V461Z" fill={pipeColor(isCoolingConsumers && v5)} />
 					</g>
 					<g id="rb v7">
 						<path d="M316 237H337V249H316V237Z" fill={pipeColor(true)} />
@@ -1324,6 +1331,11 @@
 		border-radius: 3px;
 	}
 
+	.simulating {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+	}
+
 	:global(.mdc-chip) {
 		min-width: 76px !important;
 		min-height: 70px !important;
@@ -1362,7 +1374,7 @@
 
 	@media (max-width: 1350px) {
 		.mode-choice {
-			width:  100px;
+			width: 100px;
 		}
 		.dialog-block {
 			width: 330px;
