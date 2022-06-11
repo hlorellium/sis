@@ -18,6 +18,16 @@
 
 	let schemeModes = [SchemeModes.Main, SchemeModes.Reserve];
 
+	let mnemoschemeModes = [MnemoschemeModes.Light, MnemoschemeModes.Dark];
+
+	let mnemoschemeMode: MnemoschemeModes = MnemoschemeModes.Light;
+
+	$: isDarkMode = mnemoschemeMode === MnemoschemeModes.Dark;
+	$: isLightMode = mnemoschemeMode === MnemoschemeModes.Light;
+
+	// Is automating control working
+	let AC = true;
+
 	let selectedMode = SchemeModes.Main;
 
 	$: mainMode = selectedMode === SchemeModes.Main;
@@ -45,7 +55,7 @@
 	let CN2State: PumpStates = PumpStates.Off;
 	let CN3State: PumpStates = PumpStates.Off;
 
-	// Is valve openned
+	// Is valve opened
 	let v1 = true;
 	let v2 = true;
 	let v3 = false;
@@ -71,7 +81,7 @@
 
 	$: pumpState = CN1 ? CN1State : CN2 ? CN2State : CN3 ? CN3State : PumpStates.Off;
 
-	// Is valve openned to nourish the system from reserve tank
+	// Is valve opened to nourish the system from reserve tank
 	$: nourishing = v7;
 
 	$: waterForPumps = TO || nourishing;
@@ -97,7 +107,7 @@
 	};
 	$: discCNNW = {
 		text: 'Включите ЦН III-1 или ЦН III-2.',
-		state: mainMode && !pumpWorking && TO && !(CNE || (TO1E && TO2E)),
+		state: mainMode && !CN1 && !CN2 && TO && !(CNE || (TO1E && TO2E)),
 		color: 'error'
 	};
 
@@ -150,10 +160,17 @@
 		color: 'error'
 	};
 
+	$: discAC = {
+		text: 'Отсутствие автоматического управления.',
+		state: !AC,
+		color: 'error'
+	};
+
 	$: discs = [
 		discNoCooling,
 		discCN,
 		discCNNW,
+		discAC,
 		discTONW,
 		discCNR,
 		discTooHot,
@@ -165,7 +182,7 @@
 		discTO2E
 	].filter((disc) => disc.state);
 
-	// Uitility functions
+	// Utility functions
 	const signColor = (isWorking: boolean) => (isWorking ? '#4AFF7D' : 'white');
 
 	const pipeColor = (hasWater: boolean) => (hasWater ? '#00A3FF' : '#7BD0FF');
@@ -204,9 +221,9 @@
 
 	// React to accidents
 	$: if (CN1E && CN1State !== PumpStates.Off) {
-		if (!CN2E) {
+		if (AC && !CN2E) {
 			CN2State = CN1State;
-		} else if (!CN3E) {
+		} else if (AC && !CN3E) {
 			CN3State = CN1State;
 		}
 
@@ -214,9 +231,9 @@
 	}
 
 	$: if (CN2E && CN2State !== PumpStates.Off) {
-		if (!CN1E) {
+		if (AC && !CN1E) {
 			CN1State = CN2State;
-		} else if (!CN3E) {
+		} else if (AC && !CN3E) {
 			CN3State = CN2State;
 		}
 
@@ -224,9 +241,9 @@
 	}
 
 	$: if (CN3E && CN3State !== PumpStates.Off) {
-		if (!CN1E) {
+		if (AC && !CN1E) {
 			CN1State = CN3State;
-		} else if (!CN2E) {
+		} else if (AC && !CN2E) {
 			CN2State = CN3State;
 		}
 
@@ -235,10 +252,12 @@
 
 	$: if (TO1E) {
 		TO1 = false;
-		v1 = false;
-		v2 = false;
+		if (AC) {
+			v1 = false;
+			v2 = false;
+		}
 
-		if (!TO2E) {
+		if (AC && !TO2E) {
 			v3 = true;
 			v4 = true;
 		}
@@ -246,13 +265,45 @@
 
 	$: if (TO2E) {
 		TO2 = false;
-		if (!TO1E) {
+		if (AC && !TO1E) {
 			v1 = true;
 			v2 = true;
 		}
-		v3 = false;
-		v4 = false;
+		if (AC) {
+			v3 = false;
+			v4 = false;
+		}
 	}
+
+	// Should open variables
+	$: openCN1 = (!CN1 && !CN1E && !pumpWorking && (mainMode || CN3E)) || discCNNW.state;
+
+	$: openCN2 = (!CN2 && !CN2E && !pumpWorking && (mainMode || CN3E)) || discCNNW.state;
+
+	$: openCN3 =
+		(!CN3 && !CN3E && !pumpWorking && ((!openCN2 && !openCN1) || reserveMode)) || discCNR.state;
+
+	$: openV1 = !TO1E && !v1 && (TO2E || (discTONW.state && ((!v3 && !v4) || v1)));
+
+	$: openV2 = !TO1E && !v2 && (TO2E || (discTONW.state && ((!v3 && !v4) || v2)));
+
+	$: openV3 = !TO2E && !v3 && (TO1E || (discTONW.state && ((!v1 && !v2) || v4)));
+
+	$: openV4 = !TO2E && !v4 && (TO1E || (discTONW.state && ((!v1 && !v2) || v3)));
+
+	$: closeCN1 = CN1 && (discCNR.state || (discCN.state && CN2));
+
+	$: closeCN2 = CN2 && ((discCN.state && CN1) || discCNR.state);
+
+	$: closeCN3 = CN3 && (workingPumpsLength > 1 || discCNNW.state);
+
+	$: closeV1 = TO1E && v1;
+
+	$: closeV2 = TO1E && v2;
+
+	$: closeV3 = TO2E && v3;
+
+	$: closeV4 = TO2E && v4;
 
 	// Simulate circuit working
 	const updateRbLevel = () => {
@@ -336,7 +387,7 @@
 			</span><span style="font-weight: bold;">{coolingSpeed}</span>
 		</div>
 
-		<div style="padding: 1rem; font-size: 1rem;">
+		<div style="padding: 0.5rem 1rem; font-size: 1rem;">
 			<span class="mdc-typography--headline6" style="margin: 0; color: #888;">
 				Информационная поддержка
 			</span>
@@ -390,6 +441,12 @@
 		{#if active === 'Моделирование'}
 			<div class="simulating">
 				<div class="errors-controls">
+					<div>
+						<FormField>
+							<Switch bind:checked={AC} touch />
+							<span slot="label">Автоматическое управление</span>
+						</FormField>
+					</div>
 					<div>
 						<FormField>
 							<Switch bind:checked={CN1E} touch />
@@ -452,8 +509,15 @@
 	</div>
 	<div class="scheme-container">
 		<div class="mnemoscheme mdc-elevation--z4">
+			<div class="theme">
+				<Set chips={mnemoschemeModes} let:chip choice bind:selected={mnemoschemeMode}>
+					<Chip {chip}>
+						<Text>{chip}</Text>
+					</Chip>
+				</Set>
+			</div>
 			<svg
-				width="812"
+				width="var(--schemeWidth)"
 				height="692"
 				viewBox="0 0 683 577"
 				fill="none"
@@ -626,10 +690,10 @@
 						<path d="M242 269L242 545H230L230 269L242 269Z" fill={pipeColor(TO2)} />
 					</g>
 					<g id="SVZ pipes">
-						<path d="M402 294H480V306H402V294Z" fill={pipeColor(true)} />
-						<path d="M483 294L483 456H471L471 294H483Z" fill={pipeColor(true)} />
-						<path d="M414 274L414 294H402L402 274L414 274Z" fill={pipeColor(true)} />
-						<path d="M414 306L414 326H402L402 306H414Z" fill={pipeColor(true)} />
+						<path d="M402 294H480V306H402V294Z" fill={pipeColor(isCoolingConsumers)} />
+						<path d="M483 294L483 456H471L471 294H483Z" fill={pipeColor(isCoolingConsumers)} />
+						<path d="M414 274L414 294H402L402 274L414 274Z" fill={pipeColor(isCoolingConsumers)} />
+						<path d="M414 306L414 326H402L402 306H414Z" fill={pipeColor(isCoolingConsumers)} />
 					</g>
 					<rect
 						id="TO1 V2"
@@ -638,7 +702,7 @@
 						width="20"
 						height="12"
 						transform="rotate(90 414 123)"
-						fill={pipeColor(v1)}
+						fill={pipeColor(TO1)}
 					/>
 					<g id="v2 pumps">
 						<path d="M230 54.0002H414V66.0002H230V54.0002Z" fill={pipeColor(TO1)} />
@@ -651,7 +715,7 @@
 						width="20"
 						height="12"
 						transform="rotate(90 415 456)"
-						fill={pipeColor(v3)}
+						fill={pipeColor(TO2)}
 					/>
 					<rect
 						id="v1 TO1"
@@ -660,7 +724,7 @@
 						width="20"
 						height="12"
 						transform="rotate(90 414 205)"
-						fill={pipeColor(v1)}
+						fill={pipeColor(v1 && isCoolingConsumers)}
 					/>
 					<rect
 						id="v3 TO2"
@@ -669,7 +733,7 @@
 						width="20"
 						height="12"
 						transform="rotate(90 414 376)"
-						fill={pipeColor(v3)}
+						fill={pipeColor(v3 && isCoolingConsumers)}
 					/>
 					<g id="pumps cooling" style="--fillColor: {pipeColor(isCoolingConsumers)}">
 						<path d="M521 55.0002V456H509L509 55.0002L521 55.0002Z" fill="var(--fillColor)" />
@@ -700,7 +764,7 @@
 							id="Vector 21"
 							d="M267 257V228L290.5 235.5V250L267 257Z"
 							fill={signColor(v7)}
-							stroke="black"
+							stroke="var(--strokeColor)"
 						/>
 						<path
 							id="Vector 22"
@@ -722,21 +786,25 @@
 						id="valve_2"
 						class="interactive"
 						on:click={() => {
-							if (TOE) return;
+							if (AC && TOE) return;
 							v2 = !v2;
 						}}
+						class:open={isLightMode && openV2}
+						class:close={isLightMode && closeV2}
 					>
 						<path
 							id="Vector 21_2"
 							d="M394 73.0001L423 73.0001L415.5 96.5001L401 96.5001L394 73.0001Z"
-							fill={signColor(v2)}
-							stroke="black"
+							fill={signColor(isDarkMode ? openV2 : v2)}
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_2"
 							d="M394 122.5L423 122.5L415.5 99.0001L401 99.0001L394 122.5Z"
-							fill={signColor(v2)}
-							stroke="black"
+							fill={signColor(isDarkMode ? openV2 : v2)}
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<text
 							id="V1_2"
@@ -751,22 +819,26 @@
 					<g
 						id="valve_3"
 						class="interactive"
+						class:open={isLightMode && openV4}
+						class:close={isLightMode && closeV4}
 						on:click={() => {
-							if (TOE) return;
+							if (AC && TOE) return;
 							v4 = !v4;
 						}}
 					>
 						<path
 							id="Vector 21_3"
 							d="M394 475L423 475L415.5 498.5L401 498.5L394 475Z"
-							fill={signColor(v4)}
-							stroke="black"
+							fill={signColor(isDarkMode ? openV4 : v4)}
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_3"
 							d="M394 524.5L423 524.5L415.5 501L401 501L394 524.5Z"
-							fill={signColor(v4)}
-							stroke="black"
+							fill={signColor(isDarkMode ? openV4 : v4)}
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<text
 							id="V1_3"
@@ -781,8 +853,10 @@
 					<g
 						id="valve_4"
 						class="interactive"
+						class:open={openV1}
+						class:close={closeV1}
 						on:click={() => {
-							if (TOE) return;
+							if (AC && TOE) return;
 							v1 = !v1;
 						}}
 					>
@@ -790,13 +864,15 @@
 							id="Vector 21_4"
 							d="M395 225L424 225L416.5 248.5L402 248.5L395 225Z"
 							fill={signColor(v1)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_4"
 							d="M395 274.5L424 274.5L416.5 251L402 251L395 274.5Z"
 							fill={signColor(v1)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<text
 							id="V1_4"
@@ -811,8 +887,10 @@
 					<g
 						id="valve_5"
 						class="interactive"
+						class:open={openV3}
+						class:close={closeV3}
 						on:click={() => {
-							if (TOE) return;
+							if (AC && TOE) return;
 							v3 = !v3;
 						}}
 					>
@@ -820,13 +898,15 @@
 							id="Vector 21_5"
 							d="M394 326L423 326L415.5 349.5L401 349.5L394 326Z"
 							fill={signColor(v3)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_5"
 							d="M394 375.5L423 375.5L415.5 352L401 352L394 375.5Z"
 							fill={signColor(v3)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<text
 							id="V1_5"
@@ -1078,6 +1158,8 @@
 						id="Pump"
 						class="interactive"
 						class:hasError={CN1E}
+						class:open={openCN1}
+						class:close={closeCN1}
 						on:click={() => {
 							if (CN1E) return;
 							CN1 ? (CN1State = PumpStates.Off) : (CN1State = PumpStates.HS);
@@ -1120,6 +1202,8 @@
 						id="Pump_2"
 						class="interactive"
 						class:hasError={CN2E}
+						class:open={openCN2}
+						class:close={closeCN2}
 						on:click={() => {
 							if (CN2E) return;
 							CN2 ? (CN2State = PumpStates.Off) : (CN2State = PumpStates.HS);
@@ -1162,6 +1246,8 @@
 						id="Pump_3"
 						class="interactive"
 						class:hasError={CN3E}
+						class:open={openCN3}
+						class:close={closeCN3}
 						on:click={() => {
 							if (CN3E) return;
 							CN3 ? (CN3State = PumpStates.Off) : (CN3State = PumpStates.HS);
@@ -1206,13 +1292,15 @@
 							id="Vector 21_6"
 							d="M158 369V340L181.5 347.5V362L158 369Z"
 							fill={signColor(v6)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_6"
 							d="M207.5 369V340L184 347.5V362L207.5 369Z"
 							fill={signColor(v6)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<text
 							id="V1_6"
@@ -1229,13 +1317,15 @@
 							id="Vector 21_7"
 							d="M35.0002 469V440L58.5002 447.5V462L35.0002 469Z"
 							fill={signColor(v5)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_7"
 							d="M84.5002 469V440L61.0002 447.5V462L84.5002 469Z"
 							fill={signColor(v5)}
-							stroke="black"
+							stroke="var(--strokeColor)"
+							stroke-width="var(--strokeWidth)"
 						/>
 						<text
 							id="V1_7"
@@ -1281,21 +1371,37 @@
 <style>
 	.container {
 		display: grid;
-		grid-template-columns: auto auto;
+		grid-template-columns: auto 1fr;
 		column-gap: 32px;
 		font-size: 1rem;
-		grid-template-rows: auto;
+		grid-template-rows: min-content;
 
 		--error-color: #d02626;
 		--success-color: #0da739;
+
+		--schemeWidth: 812;
 	}
 
 	.pumps-params {
 		display: flex;
 		flex-direction: column;
-		row-gap: 16px;
+		row-gap: 8px;
 	}
+
+	.theme {
+		margin-bottom: -50px;
+		margin-top: -20px;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
 	.mnemoscheme {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+
 		--strokeColor: black;
 		--strokeWidth: 1;
 
@@ -1304,18 +1410,31 @@
 
 		padding: 16px 24px;
 	}
+
 	.cooling-mode {
 		margin-bottom: 16px;
 		font-size: 1rem;
 	}
+
 	.hasError {
 		--strokeColor: #ff3737;
 		--strokeWidth: 3;
 
 		animation: blink 2s infinite;
 	}
-	#scheme-container {
-		width: 100%;
+
+	.open {
+		--strokeColor: #4aff7d;
+		--strokeWidth: 3;
+
+		animation: blink 2s infinite;
+	}
+
+	.close {
+		--strokeColor: #fff;
+		--strokeWidth: 3;
+
+		animation: blink 2s infinite;
 	}
 
 	.description {
@@ -1337,12 +1456,13 @@
 	}
 
 	:global(.mdc-chip) {
-		min-width: 76px !important;
+		min-width: 75px !important;
 		min-height: 70px !important;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
+
 	:global(.mdc-chip__text) {
 		font-weight: bold;
 		font-size: 1.2rem;
