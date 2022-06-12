@@ -296,11 +296,11 @@
 
 	$: openV4 = !TO2E && !v4 && (TO1E || (discTONW.state && ((!v1 && !v2) || v3)));
 
-	$: closeCN1 = CN1 && (discCNR.state || (discCN.state && CN2));
+	$: closeCN1 = CN1 && (discCNR.state || (discCN.state && CN2) || (reserveMode && !CN3E));
 
 	$: closeCN2 = CN2 && ((discCN.state && CN1) || discCNR.state);
 
-	$: closeCN3 = CN3 && (workingPumpsLength > 1 || discCNNW.state);
+	$: closeCN3 = CN3 && ((workingPumpsLength > 1 && !reserveMode) || discCNNW.state);
 
 	$: closeV1 = TO1E && v1;
 
