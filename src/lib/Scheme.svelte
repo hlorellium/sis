@@ -36,6 +36,10 @@
 
 	$: modeName = mainMode ? SchemeModes.Main : reserveMode ? SchemeModes.Reserve : 'Режим не выбран';
 
+	$: if (!mnemoschemeMode) {
+		mnemoschemeMode = MnemoschemeModes.Light;
+	}
+
 	const pumpStates = [PumpStates.HS, PumpStates.LS, PumpStates.Off];
 
 	// Pumps errors
@@ -161,7 +165,7 @@
 	};
 
 	$: discAC = {
-		text: 'Отсутствие автоматического управления.',
+		text: 'Ошибка автоматического управления.',
 		state: !AC,
 		color: 'error'
 	};
@@ -183,7 +187,8 @@
 	].filter((disc) => disc.state);
 
 	// Utility functions
-	const signColor = (isWorking: boolean) => (isWorking ? '#4AFF7D' : 'white');
+	const signColor = (isWorking: boolean) =>
+		isWorking ? 'var(--working-sign-color)' : 'var(--stopped-sign-color)';
 
 	const pipeColor = (hasWater: boolean) => (hasWater ? '#00A3FF' : '#7BD0FF');
 
@@ -400,115 +405,151 @@
 			</ul>
 		</div>
 
-		<TabBar tabs={['Управление ОУ', 'Моделирование']} let:tab bind:active>
-			<Tab {tab} minWidth>
-				<Label>{tab}</Label>
-			</Tab>
-		</TabBar>
+		<div class="control-panel">
+			<TabBar tabs={['Управление ОУ', 'Моделирование']} let:tab bind:active>
+				<Tab {tab} minWidth>
+					<Label>{tab}</Label>
+				</Tab>
+			</TabBar>
 
-		{#if active === 'Управление ОУ'}
-			<div class="pumps-params">
-				<div>
-					<span class="description mdc-typography--headline6"> Режим работы ЦН III-1 </span>
+			{#if active === 'Управление ОУ'}
+				<div class="pumps-params">
+					<div>
+						<span class="description mdc-typography--headline6"> Режим работы ЦН III-1 </span>
 
-					<Set chips={pumpStates} let:chip choice bind:selected={CN1State}>
-						<Chip {chip}>
-							<Text>{chip}</Text>
-						</Chip>
-					</Set>
-				</div>
+						<Set chips={pumpStates} let:chip choice bind:selected={CN1State}>
+							<Chip {chip}>
+								<Text>{chip}</Text>
+							</Chip>
+						</Set>
+					</div>
 
-				<div>
-					<span class="description"> Режим работы ЦН III-2 </span>
-					<Set chips={pumpStates} let:chip choice bind:selected={CN2State}>
-						<Chip {chip}>
-							<Text>{chip}</Text>
-						</Chip>
-					</Set>
-				</div>
+					<div>
+						<span class="description"> Режим работы ЦН III-2 </span>
+						<Set chips={pumpStates} let:chip choice bind:selected={CN2State}>
+							<Chip {chip}>
+								<Text>{chip}</Text>
+							</Chip>
+						</Set>
+					</div>
 
-				<div>
-					<span class="description"> Режим работы ЦН III-Р </span>
-					<Set chips={pumpStates} let:chip choice bind:selected={CN3State}>
-						<Chip {chip}>
-							<Text>{chip}</Text>
-						</Chip>
-					</Set>
-				</div>
-			</div>
-		{/if}
-
-		{#if active === 'Моделирование'}
-			<div class="simulating">
-				<div class="errors-controls">
 					<div>
-						<FormField>
-							<Switch bind:checked={AC} touch />
-							<span slot="label">Автоматическое управление</span>
-						</FormField>
-					</div>
-					<div>
-						<FormField>
-							<Switch bind:checked={CN1E} touch />
-							<span slot="label">Авария ЦН III-1</span>
-						</FormField>
-					</div>
-					<div>
-						<FormField>
-							<Switch bind:checked={CN2E} touch />
-							<span slot="label">Авария ЦН III-2</span>
-						</FormField>
-					</div>
-					<div>
-						<FormField>
-							<Switch bind:checked={CN3E} touch />
-							<span slot="label">Авария ЦН III-Р</span>
-						</FormField>
-					</div>
-					<div>
-						<FormField>
-							<Switch bind:checked={TO1E} touch />
-							<span slot="label">Авария TО III-IVк №1</span>
-						</FormField>
-					</div>
-					<div>
-						<FormField>
-							<Switch bind:checked={TO2E} touch />
-							<span slot="label">Авария TО III-IVк №1</span>
-						</FormField>
+						<span class="description"> Режим работы ЦН III-Р </span>
+						<Set chips={pumpStates} let:chip choice bind:selected={CN3State}>
+							<Chip {chip}>
+								<Text>{chip}</Text>
+							</Chip>
+						</Set>
 					</div>
 				</div>
+			{/if}
 
-				<div class="config">
-					<Textfield bind:value={C1Coef} label="Коэффицент Потр. 1" type="number" input$step="0.1">
-						<HelperText slot="helper">Коэффицент охлаждения Потр. 1</HelperText>
-					</Textfield>
+			{#if active === 'Моделирование'}
+				<div class="simulating">
+					<div class="errors-controls">
+						<div>
+							<FormField>
+								<Switch bind:checked={AC} touch />
+								<span slot="label">Автоматическое управление</span>
+							</FormField>
+						</div>
+						<div>
+							<FormField>
+								<Switch bind:checked={CN1E} touch />
+								<span slot="label">Авария ЦН III-1</span>
+							</FormField>
+						</div>
+						<div>
+							<FormField>
+								<Switch bind:checked={CN2E} touch />
+								<span slot="label">Авария ЦН III-2</span>
+							</FormField>
+						</div>
+						<div>
+							<FormField>
+								<Switch bind:checked={CN3E} touch />
+								<span slot="label">Авария ЦН III-Р</span>
+							</FormField>
+						</div>
+						<div>
+							<FormField>
+								<Switch bind:checked={TO1E} touch />
+								<span slot="label">Авария TО III-IVк №1</span>
+							</FormField>
+						</div>
+						<div>
+							<FormField>
+								<Switch bind:checked={TO2E} touch />
+								<span slot="label">Авария TО III-IVк №1</span>
+							</FormField>
+						</div>
+					</div>
 
-					<Textfield bind:value={C2Coef} label="Коэффицент Потр. 2" type="number" input$step="0.1">
-						<HelperText slot="helper">Коэффицент охлаждения Потр. 2</HelperText>
-					</Textfield>
+					<div class="config">
+						<Textfield
+							bind:value={C1Coef}
+							label="Коэффицент Потр. 1"
+							type="number"
+							input$step="0.1"
+						>
+							<HelperText slot="helper">Коэффицент охлаждения Потр. 1</HelperText>
+						</Textfield>
 
-					<Textfield bind:value={C3Coef} label="Коэффицент Потр. 3" type="number" input$step="0.1">
-						<HelperText slot="helper">Коэффицент охлаждения Потр. 3</HelperText>
-					</Textfield>
+						<Textfield
+							bind:value={C2Coef}
+							label="Коэффицент Потр. 2"
+							type="number"
+							input$step="0.1"
+						>
+							<HelperText slot="helper">Коэффицент охлаждения Потр. 2</HelperText>
+						</Textfield>
 
-					<Textfield bind:value={C4Coef} label="Коэффицент Потр. 4" type="number" input$step="0.1">
-						<HelperText slot="helper">Коэффицент охлаждения Потр. 4</HelperText>
-					</Textfield>
+						<Textfield
+							bind:value={C3Coef}
+							label="Коэффицент Потр. 3"
+							type="number"
+							input$step="0.1"
+						>
+							<HelperText slot="helper">Коэффицент охлаждения Потр. 3</HelperText>
+						</Textfield>
 
-					<Textfield bind:value={C5Coef} label="Коэффицент Потр. 5" type="number" input$step="0.1">
-						<HelperText slot="helper">Коэффицент охлаждения Потр. 5</HelperText>
-					</Textfield>
+						<Textfield
+							bind:value={C4Coef}
+							label="Коэффицент Потр. 4"
+							type="number"
+							input$step="0.1"
+						>
+							<HelperText slot="helper">Коэффицент охлаждения Потр. 4</HelperText>
+						</Textfield>
 
-					<Textfield bind:value={C6Coef} label="Коэффицент Потр. 6" type="number" input$step="0.1">
-						<HelperText slot="helper">Коэффицент охлаждения Потр. 6</HelperText>
-					</Textfield>
+						<Textfield
+							bind:value={C5Coef}
+							label="Коэффицент Потр. 5"
+							type="number"
+							input$step="0.1"
+						>
+							<HelperText slot="helper">Коэффицент охлаждения Потр. 5</HelperText>
+						</Textfield>
+
+						<Textfield
+							bind:value={C6Coef}
+							label="Коэффицент Потр. 6"
+							type="number"
+							input$step="0.1"
+						>
+							<HelperText slot="helper">Коэффицент охлаждения Потр. 6</HelperText>
+						</Textfield>
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 	<div class="scheme-container">
-		<div class="mnemoscheme mdc-elevation--z4">
+		<div
+			class="mnemoscheme mdc-elevation--z4"
+			class:dark-mode={isDarkMode}
+			class:light-mode={isLightMode}
+		>
 			<div class="theme">
 				<Set chips={mnemoschemeModes} let:chip choice bind:selected={mnemoschemeMode}>
 					<Chip {chip}>
@@ -517,7 +558,7 @@
 				</Set>
 			</div>
 			<svg
-				width="var(--schemeWidth)"
+				width="100%"
 				height="692"
 				viewBox="0 0 683 577"
 				fill="none"
@@ -525,7 +566,12 @@
 			>
 				<g id="scheme">
 					<g id="tank">
-						<rect width="80" height="109" transform="translate(279 97.0002)" fill="white" />
+						<rect
+							width="80"
+							height="109"
+							transform="translate(279 97.0002)"
+							fill={signColor(false)}
+						/>
 						<rect
 							id="Rectangle 5"
 							x="279.5"
@@ -789,20 +835,20 @@
 							if (AC && TOE) return;
 							v2 = !v2;
 						}}
-						class:open={isLightMode && openV2}
-						class:close={isLightMode && closeV2}
+						class:open={openV2}
+						class:close={closeV2}
 					>
 						<path
 							id="Vector 21_2"
 							d="M394 73.0001L423 73.0001L415.5 96.5001L401 96.5001L394 73.0001Z"
-							fill={signColor(isDarkMode ? openV2 : v2)}
+							fill={signColor(v2)}
 							stroke="var(--strokeColor)"
 							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_2"
 							d="M394 122.5L423 122.5L415.5 99.0001L401 99.0001L394 122.5Z"
-							fill={signColor(isDarkMode ? openV2 : v2)}
+							fill={signColor(v2)}
 							stroke="var(--strokeColor)"
 							stroke-width="var(--strokeWidth)"
 						/>
@@ -819,8 +865,8 @@
 					<g
 						id="valve_3"
 						class="interactive"
-						class:open={isLightMode && openV4}
-						class:close={isLightMode && closeV4}
+						class:open={openV4}
+						class:close={closeV4}
 						on:click={() => {
 							if (AC && TOE) return;
 							v4 = !v4;
@@ -829,14 +875,14 @@
 						<path
 							id="Vector 21_3"
 							d="M394 475L423 475L415.5 498.5L401 498.5L394 475Z"
-							fill={signColor(isDarkMode ? openV4 : v4)}
+							fill={signColor(v4)}
 							stroke="var(--strokeColor)"
 							stroke-width="var(--strokeWidth)"
 						/>
 						<path
 							id="Vector 22_3"
 							d="M394 524.5L423 524.5L415.5 501L401 501L394 524.5Z"
-							fill={signColor(isDarkMode ? openV4 : v4)}
+							fill={signColor(v4)}
 							stroke="var(--strokeColor)"
 							stroke-width="var(--strokeWidth)"
 						/>
@@ -963,7 +1009,7 @@
 							y="456.5"
 							width="89"
 							height="59"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -985,7 +1031,7 @@
 							y="39.5001"
 							width="61"
 							height="40.3333"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -1015,7 +1061,7 @@
 							y="111.5"
 							width="61"
 							height="40.3333"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -1044,7 +1090,7 @@
 							y="183.5"
 							width="61"
 							height="40.3333"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -1074,7 +1120,7 @@
 							y="255.5"
 							width="61"
 							height="40.3333"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -1103,7 +1149,7 @@
 							y="327.5"
 							width="61"
 							height="40.3333"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -1132,7 +1178,7 @@
 							y="399.5"
 							width="61"
 							height="40.3333"
-							fill="white"
+							fill={signColor(false)}
 							stroke="black"
 						/>
 						<text
@@ -1379,7 +1425,23 @@
 		--error-color: #d02626;
 		--success-color: #0da739;
 
+		--working-sign-color: #4aff7d;
+		--stopped-sign-color: #fff;
+
 		--schemeWidth: 812;
+		--backgroup-color: #fcfcfc;
+	}
+
+	.dark-mode {
+		--working-sign-color: #eee;
+		--stopped-sign-color: #eeeeee;
+		--backgroup-color: #eee;
+	}
+
+	.dark-mode .open,
+	.dark-mode .close {
+		--working-sign-color: #4aff7d;
+		--stopped-sign-color: #fff;
 	}
 
 	.pumps-params {
@@ -1405,7 +1467,7 @@
 		--strokeColor: black;
 		--strokeWidth: 1;
 
-		background: #ffffff;
+		background: var(--backgroup-color);
 		border-radius: 31px;
 
 		padding: 16px 24px;
@@ -1423,14 +1485,14 @@
 		animation: blink 2s infinite;
 	}
 
-	.open {
+	.light-mode .open {
 		--strokeColor: #4aff7d;
 		--strokeWidth: 3;
 
 		animation: blink 2s infinite;
 	}
 
-	.close {
+	.light-mode .close {
 		--strokeColor: #fff;
 		--strokeWidth: 3;
 
@@ -1448,6 +1510,11 @@
 		height: 100px;
 		overflow: auto;
 		border-radius: 3px;
+	}
+
+	.control-panel {
+		width: 512px;
+		overflow-x: hidden;
 	}
 
 	.simulating {
