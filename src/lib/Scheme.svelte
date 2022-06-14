@@ -281,9 +281,9 @@
 	}
 
 	// Should open variables
-	$: openCN1 = (!CN1 && !CN1E && !pumpWorking && (mainMode || CN3E)) || discCNNW.state;
+	$: openCN1 = !CN1 && !CN1E && ((!pumpWorking && (mainMode || CN3E)) || discCNNW.state);
 
-	$: openCN2 = (!CN2 && !CN2E && !pumpWorking && (mainMode || CN3E)) || discCNNW.state;
+	$: openCN2 = !CN2 && !CN2E && ((!pumpWorking && (mainMode || CN3E)) || discCNNW.state);
 
 	$: openCN3 =
 		(!CN3 && !CN3E && !pumpWorking && ((!openCN2 && !openCN1) || reserveMode)) || discCNR.state;
